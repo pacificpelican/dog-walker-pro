@@ -246,7 +246,8 @@ function printSheet(kind, bodyHtml, { bare = false } = {}) {
   document.title = `dog-walker-pro--${kind}_${stampName(new Date())}`;
   const restore = () => { document.title = oldTitle; window.removeEventListener('afterprint', restore); };
   window.addEventListener('afterprint', restore);
-  setTimeout(() => { window.print(); setTimeout(restore, 1000); }, 80);
+  const imgs = [...sheet.querySelectorAll('img')].map(i => i.decode ? i.decode().catch(() => {}) : Promise.resolve());
+  Promise.all(imgs).then(() => setTimeout(() => { window.print(); setTimeout(restore, 1000); }, 50));
 }
 
 function accountTab(game, body) {
