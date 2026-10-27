@@ -61,7 +61,7 @@ export function showPause(game) {
     const name = `dog-walker-pro-${stamp.getFullYear()}${p(stamp.getMonth() + 1)}${p(stamp.getDate())}-${p(stamp.getHours())}${p(stamp.getMinutes())}${p(stamp.getSeconds())}.png`;
     canvas.toBlob(blob => {
       const url = URL.createObjectURL(blob), out = c.querySelector('#shot-out');
-      out.innerHTML = `<img id="shot-preview" src="${url}" alt="Screenshot"><div class="row"><a class="btnx primary" id="dl" href="${url}" download="${name}">⬇ Download PNG</a></div>`;
+      out.innerHTML = `<img id="shot-preview" src="${url}" alt="Screenshot"><div class="row"><a class="btnx primary" id="dl" href="${url}" download="${name}">💾 Download PNG</a></div>`;
     }, 'image/png');
   };
 }
