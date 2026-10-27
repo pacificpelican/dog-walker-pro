@@ -1,3 +1,5 @@
+<p align="center"><img src="assets/logo.svg" alt="Dog Walker Pro logo" width="140"></p>
+
 # Dog Walker Pro
 
 A top-down pixel-art open-world game: walk dogs and birds around a small city, chat with NPCs, buy coffee and hats.
