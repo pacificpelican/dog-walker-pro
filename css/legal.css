@@ -1,0 +1,6 @@
+body { margin: 0; background: #2a1346; color: #f4ecff; font: 16px/1.55 system-ui, sans-serif; }
+main { max-width: 720px; margin: 0 auto; padding: 24px 18px 48px; }
+h1 { margin: .3em 0 0; }
+h2 { margin-top: 1.6em; font-size: 1.15em; color: #ffb347; }
+a { color: #ffb347; }
+.meta { opacity: .7; font-size: 14px; }

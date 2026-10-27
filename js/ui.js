@@ -216,7 +216,7 @@ export function showGallery() {
 export function showSettings(game, tab = 'info') {
   const tabs = [['info', 'Info'], ['controls', 'Controls'], ['account', 'Account'], ['save', 'Save'], ['debug', 'Debug'], ['about', 'Credits']];
   const c = open(`<h2>⚙ Settings</h2><div class="tabs">${tabs.map(([k, n]) => `<button class="btnx ${k === tab ? 'cur' : ''}" data-t="${k}">${n}</button>`).join('')}</div><div id="tabbody"></div>
-    <div class="row end"><button class="btnx" id="x">Close</button></div>`);
+      <div class="row legal-row"><span class="legal"><a href="terms.html" target="_blank" rel="noopener">Terms</a> · <a href="privacy.html" target="_blank" rel="noopener">Privacy</a></span><button class="btnx" id="x">Close</button></div>`);
   c.querySelectorAll('[data-t]').forEach(b => b.onclick = () => showSettings(game, b.dataset.t));
   c.querySelector('#x').onclick = close;
   const body = c.querySelector('#tabbody');

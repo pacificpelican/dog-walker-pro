@@ -63,3 +63,7 @@ The API listens on `http://localhost:11434` by default, which matches `config.ph
 
 - Local storage mode is a JSON file because many PHP installs lack `pdo_sqlite`.
 - The MySQL path has not been tested against a live server.
+
+## License
+
+Released under the [ISC License](LICENSE). See also the [Terms](terms.html) and [Privacy Policy](privacy.html).
