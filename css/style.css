@@ -108,6 +108,7 @@ button.chip { cursor: pointer; font-size: 18px; padding: 2px 9px; }
   #print-sheet header { text-align: center; border-bottom: 4px solid #6b2fa0; padding-bottom: 12px; }
   #print-sheet header img { width: 90px; }
   #print-sheet h1 { margin: 6px 0 0; color: #6b2fa0; font-size: 34px; }
+  #print-sheet .sub { margin-top: 2px; font-size: 12px; color: #555; }
   #print-sheet h2 { text-align: center; margin: 18px 0; }
   #print-sheet table { margin: 0 auto; width: 70%; border-collapse: collapse; font-size: 18px; }
   #print-sheet td { border-bottom: 1px solid #ccc; padding: 8px 4px; } #print-sheet td:last-child { text-align: right; font-weight: bold; color: #c25a00; }

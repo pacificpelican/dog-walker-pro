@@ -240,7 +240,7 @@ const stampName = (d) => { const p = n => String(n).padStart(2, '0'); return `${
 function printSheet(kind, bodyHtml, { bare = false } = {}) {
   let sheet = $('#print-sheet');
   if (!sheet) { sheet = document.createElement('div'); sheet.id = 'print-sheet'; document.body.appendChild(sheet); }
-  sheet.innerHTML = `${bare ? '' : '<header><img src="assets/logo.svg" alt=""><h1>Dog Walker Pro</h1></header>'}${bodyHtml}
+  sheet.innerHTML = `${bare ? '' : '<header><img src="assets/logo.svg" alt=""><h1>Dog Walker Pro</h1><div class="sub">a game by Daniel McKeown https://altaredwood.work</div></header>'}${bodyHtml}
     <footer>Dog Walker Pro created by Daniel McKeown https://altaredwood.work</footer>`;
   const oldTitle = document.title;
   document.title = `dog-walker-pro--${kind}_${stampName(new Date())}`;
