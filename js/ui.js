@@ -68,17 +68,19 @@ export function showPause(game) {
 }
 
 // ---------------------------------------------------------------- welcome
-export function showWelcome(game) {
-  const c = open(`
-    <div class="logo-row"><img src="assets/logo.svg" alt=""><h2>Dog Walker Pro</h2></div>
-    <p>Wander the neighborhood. Find the <b>dog markers</b> on buildings and walk the pups for points. While walking, keep them happy:
-    <b>+</b> pets, <b>×</b> encourages.</p>
+const controlsHtml = () => `
     <div class="stat"><span>Arrows / WASD or D-pad</span><b>move</b></div>
     <div class="stat"><span>+ &nbsp;(E)</span><b>interact · buy · pet</b></div>
     <div class="stat"><span>× &nbsp;(X)</span><b>change hat · encourage</b></div>
     <div class="stat"><span>/ &nbsp;(T)</span><b>talk to someone</b></div>
     <div class="stat"><span>− &nbsp;(H)</span><b>cause trouble (don't)</b></div>
-    <p>Coffee calms the animals. Mind the traffic lights!</p>
+    <p>Coffee calms the animals. Mind the traffic lights!</p>`;
+export function showWelcome(game) {
+  const c = open(`
+    <div class="logo-row"><img src="assets/logo.svg" alt=""><h2>Dog Walker Pro</h2></div>
+    <p>Wander the neighborhood. Find the <b>dog markers</b> on buildings and walk the pups for points. While walking, keep them happy:
+    <b>+</b> pets, <b>×</b> encourages.</p>
+    ${controlsHtml()}
     <div class="row end"><button class="btnx primary" id="go">Let's go!</button></div>
     <div class="credit">Created by <a href="https://altaredwood.work" target="_blank" rel="noopener">Daniel McKeown</a></div>`);
   c.querySelector('#go').onclick = close;
@@ -212,13 +214,13 @@ export function showGallery() {
 
 // ---------------------------------------------------------------- settings
 export function showSettings(game, tab = 'info') {
-  const tabs = [['info', 'Info'], ['account', 'Account'], ['save', 'Save'], ['debug', 'Debug'], ['about', 'Credits']];
+  const tabs = [['info', 'Info'], ['controls', 'Controls'], ['account', 'Account'], ['save', 'Save'], ['debug', 'Debug'], ['about', 'Credits']];
   const c = open(`<h2>⚙ Settings</h2><div class="tabs">${tabs.map(([k, n]) => `<button class="btnx ${k === tab ? 'cur' : ''}" data-t="${k}">${n}</button>`).join('')}</div><div id="tabbody"></div>
     <div class="row end"><button class="btnx" id="x">Close</button></div>`);
   c.querySelectorAll('[data-t]').forEach(b => b.onclick = () => showSettings(game, b.dataset.t));
   c.querySelector('#x').onclick = close;
   const body = c.querySelector('#tabbody');
-  ({ info: infoTab, account: accountTab, save: saveTab, debug: debugTab, about: aboutTab })[tab](game, body);
+  ({ info: infoTab, controls: (g, b) => { b.innerHTML = `<h3>Controls</h3><p>Find the <b>dog markers</b> on buildings and walk the pups for points. While walking, keep them happy: <b>+</b> pets, <b>×</b> encourages.</p>${controlsHtml()}`; }, account: accountTab, save: saveTab, debug: debugTab, about: aboutTab })[tab](game, body);
 }
 
 function statsRows(game) {
