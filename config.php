@@ -22,8 +22,8 @@ return [
         'enabled'    => true,
         'provider'   => 'ollama',
         'url'        => 'http://127.0.0.1:11434',
-        'model'      => 'llama3.2',
-        'timeout'    => 20,
+        'model'      => 'llama3.1:8b',
+        'timeout'    => 60,
         'max_tokens' => 120,
     ],
 
