@@ -47,6 +47,7 @@ export class WalkSystem {
       animal: { x: b.door.x, y: b.door.y + 8, dir: 1, frame: 0, ft: 0, z: 0, wag: 0 }, last: { x: p.x, y: p.y }, totalHits: 0,
       attacks: 0, mood: 'happy',
     };
+    this.lastHit = -Infinity;
     b.offers[offer.kind] = null; b.marker = null;
     this.g.toast(`${offer.name} the ${offer.species} joined you! Keep + and x going.`);
   }
