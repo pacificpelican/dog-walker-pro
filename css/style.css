@@ -99,7 +99,9 @@ button.chip { cursor: pointer; font-size: 18px; padding: 2px 9px; }
 
 /* ---- print ---- */
 #print-sheet { display: none; }
+@page { margin: 12mm; }
 @media print {
+  * { -webkit-print-color-adjust: exact; print-color-adjust: exact; }
   body > *:not(#print-sheet) { display: none !important; }
   html, body { overflow: visible; height: auto; background: #fff; color: #000; }
   #print-sheet { display: block !important; font-family: Georgia, serif; padding: 30px; color: #000; }
@@ -109,5 +111,9 @@ button.chip { cursor: pointer; font-size: 18px; padding: 2px 9px; }
   #print-sheet h2 { text-align: center; margin: 18px 0; }
   #print-sheet table { margin: 0 auto; width: 70%; border-collapse: collapse; font-size: 18px; }
   #print-sheet td { border-bottom: 1px solid #ccc; padding: 8px 4px; } #print-sheet td:last-child { text-align: right; font-weight: bold; color: #c25a00; }
+  #print-sheet .shot { width: 100%; image-rendering: pixelated; }
+  #print-sheet .meta { text-align: center; color: #555; font-size: 13px; }
+  #print-sheet .chat { max-width: 600px; margin: 0 auto; font-size: 16px; line-height: 1.5; }
+  #print-sheet .chat .you { color: #6b2fa0; }
   #print-sheet footer { position: fixed; bottom: 20px; left: 0; right: 0; text-align: center; font-size: 13px; border-top: 2px solid #ff8a1f; padding-top: 8px; }
 }

@@ -61,7 +61,8 @@ export function showPause(game) {
     const name = `dog-walker-pro-${stamp.getFullYear()}${p(stamp.getMonth() + 1)}${p(stamp.getDate())}-${p(stamp.getHours())}${p(stamp.getMinutes())}${p(stamp.getSeconds())}.png`;
     canvas.toBlob(blob => {
       const url = URL.createObjectURL(blob), out = c.querySelector('#shot-out');
-      out.innerHTML = `<img id="shot-preview" src="${url}" alt="Screenshot"><div class="row"><a class="btnx primary" id="dl" href="${url}" download="${name}">💾 Download PNG</a></div>`;
+      out.innerHTML = `<img id="shot-preview" src="${url}" alt="Screenshot"><div class="row"><a class="btnx primary" id="dl" href="${url}" download="${name}">💾 Download PNG</a><button class="btnx" id="shot-print">🖨️ Print / PDF</button></div>`;
+      out.querySelector('#shot-print').onclick = () => printSheet('screenshot', `<img class="shot" src="${canvas.toDataURL('image/png')}" alt="Screenshot">`, { bare: true });
     }, 'image/png');
   };
 }
@@ -118,8 +119,14 @@ export function showDialog(game, p, onUnlockBird) {
     <div id="log"></div>
     <div class="chips" id="greet">${GREETINGS.map(g => `<button class="btnx">${esc(g)}</button>`).join('')}</div>
     <div class="row"><input type="text" id="say" maxlength="200" placeholder="Say something..." autocomplete="off" style="flex:1"><button class="btnx primary" id="send">Say</button></div>
-    <div class="row end"><button class="btnx" id="bye">Goodbye</button></div>`, () => { p.state = 'walk'; });
+    <div class="row end"><button class="btnx" id="printchat" title="Print or save as PDF">🖨️ Print / PDF</button><button class="btnx" id="bye">Goodbye</button></div>`, () => { p.state = 'walk'; });
   const log = c.querySelector('#log'), inp = c.querySelector('#say');
+  c.querySelector('#printchat').onclick = () => {
+    const lines = [...log.children].filter(e => e.textContent !== '…').map(e => e.classList.contains('msg-you')
+      ? `<p class="you"><b>${esc(playerName())}:</b> ${esc(e.textContent)}</p>`
+      : `<p><b>${esc(npc.name)}:</b> ${esc(e.lastChild.textContent)}</p>`).join('');
+    printSheet('conversation', `<h2>Conversation with ${esc(npc.name)}</h2><p class="meta">${esc(npc.persona)} · ${esc(new Date().toLocaleString())}</p><div class="chat">${lines}</div>`);
+  };
   const addReply = (name, text, src) => { log.insertAdjacentHTML('beforeend', `<div class="reply"><small>${esc(name)}${src ? ` · ${src}` : ''}</small>${esc(text)}</div>`); card().scrollTop = card().scrollHeight; };
   const addYou = (t) => log.insertAdjacentHTML('beforeend', `<div class="msg-you">${esc(t)}</div>`);
   if (special) { addReply(npc.name, npc.open); if (!game.state.flags.birdJobs) { onUnlockBird(); } }
@@ -220,16 +227,26 @@ function statsRows(game) {
 }
 function infoTab(game, body) {
   body.innerHTML = `<h3>Game info — ${esc(playerName())}</h3>${statsRows(game).map(([k, v]) => `<div class="stat"><span>${k}</span><b>${v}</b></div>`).join('')}
-    <div class="row"><button class="btnx" id="print" title="Print">🖨️ Print stats</button></div>`;
+    <div class="row"><button class="btnx" id="print" title="Print or save as PDF">🖨️ Print / PDF stats</button></div>`;
   body.querySelector('#print').onclick = () => printStats(game);
 }
 export function printStats(game) {
+  printSheet('stats', `<h2>${esc(playerName())}</h2><table>${statsRows(game).map(([k, v]) => `<tr><td>${k}</td><td>${v}</td></tr>`).join('')}</table>`);
+}
+
+const stampName = (d) => { const p = n => String(n).padStart(2, '0'); return `${d.getFullYear()}${p(d.getMonth() + 1)}${p(d.getDate())}-${p(d.getHours())}${p(d.getMinutes())}${p(d.getSeconds())}`; };
+
+// Browsers can't force "Save as PDF", but they use document.title as the default file name, so set it while printing.
+function printSheet(kind, bodyHtml, { bare = false } = {}) {
   let sheet = $('#print-sheet');
   if (!sheet) { sheet = document.createElement('div'); sheet.id = 'print-sheet'; document.body.appendChild(sheet); }
-  sheet.innerHTML = `<header><img src="assets/logo.svg" alt=""><h1>Dog Walker Pro</h1></header>
-    <h2>${esc(playerName())}</h2><table>${statsRows(game).map(([k, v]) => `<tr><td>${k}</td><td>${v}</td></tr>`).join('')}</table>
+  sheet.innerHTML = `${bare ? '' : '<header><img src="assets/logo.svg" alt=""><h1>Dog Walker Pro</h1></header>'}${bodyHtml}
     <footer>Dog Walker Pro created by Daniel McKeown https://altaredwood.work</footer>`;
-  setTimeout(() => window.print(), 50);
+  const oldTitle = document.title;
+  document.title = `dog-walker-pro--${kind}_${stampName(new Date())}`;
+  const restore = () => { document.title = oldTitle; window.removeEventListener('afterprint', restore); };
+  window.addEventListener('afterprint', restore);
+  setTimeout(() => { window.print(); setTimeout(restore, 1000); }, 80);
 }
 
 function accountTab(game, body) {
