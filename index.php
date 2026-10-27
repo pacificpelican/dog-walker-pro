@@ -40,6 +40,7 @@ $v = '1';
   </div>
 
   <div id="pad">
+    <button id="btn-pause" aria-label="Pause"><span></span><span></span></button>
     <div id="dpad">
       <button data-b="up" aria-label="Up">▲</button>
       <button data-b="left" aria-label="Left">◀</button>

@@ -111,6 +111,10 @@ $('#abtns').querySelectorAll('button').forEach(b => {
   b.addEventListener('contextmenu', e => e.preventDefault());
 });
 $('#btn-settings').onclick = () => ui.showSettings(game);
+$('#btn-pause').onclick = () => ui.showPause(game);
+window.addEventListener('keydown', (e) => {
+  if ((e.code === 'KeyP') && !ui.isOpen() && !/INPUT|TEXTAREA/.test(document.activeElement?.tagName || '')) ui.showPause(game);
+});
 $('#btn-map').onclick = () => { const m = $('#minimap'); m.hidden = !m.hidden; };
 $('#task-return').onclick = () => { if (game.walk.task && !ui.isOpen()) tryReturnOrGiveUp(); };
 

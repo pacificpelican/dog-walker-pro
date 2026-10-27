@@ -29,6 +29,43 @@ export function fmtTime(sec) {
 }
 export const playerName = () => auth.username || 'Player 1';
 
+// ---------------------------------------------------------------- pause + screenshot
+function makeScreenshot(game) {
+  const src = $('#game'), w = src.width, h = src.height, k = Math.max(2, Math.round(960 / w));
+  const bar = 18 * k / 2, c = document.createElement('canvas');
+  c.width = w * k; c.height = h * k + bar * 2;
+  const x = c.getContext('2d'); x.imageSmoothingEnabled = false;
+  x.fillStyle = '#24103f'; x.fillRect(0, 0, c.width, c.height);
+  x.drawImage(src, 0, bar, w * k, h * k);
+  const stamp = new Date(), ts = stamp.toLocaleString();
+  x.textBaseline = 'middle'; const fs = Math.round(bar * .6);
+  x.font = `bold ${fs}px ui-monospace, monospace`; x.fillStyle = '#ff8a1f'; x.textAlign = 'left';
+  x.fillText('Dog Walker Pro', 12, bar / 2);
+  x.fillStyle = '#d9c2ff'; x.textAlign = 'right'; x.fillText(`${playerName()} · ${ts}`, c.width - 12, bar / 2);
+  x.textAlign = 'center'; x.fillStyle = '#d9c2ff';
+  x.fillText('Dog Walker Pro created by Daniel McKeown · altaredwood.work', c.width / 2, bar * 1.5 + h * k);
+  return { canvas: c, stamp };
+}
+
+export function showPause(game) {
+  if (isOpen()) return;
+  const c = open(`
+    <div class="logo-row"><img src="assets/logo.svg" alt=""><h2>Paused</h2></div>
+    <p>Dog Walker Pro &mdash; created by <a href="https://altaredwood.work" target="_blank" rel="noopener">Daniel McKeown</a></p>
+    <div class="row"><button class="btnx primary" id="resume">▶ Resume</button><button class="btnx" id="shot">📷 Screenshot</button><button class="btnx" id="pset">⚙ Settings</button></div>
+    <div id="shot-out"></div>`);
+  c.querySelector('#resume').onclick = close;
+  c.querySelector('#pset').onclick = () => { close(); showSettings(game); };
+  c.querySelector('#shot').onclick = () => {
+    const { canvas, stamp } = makeScreenshot(game), p = n => String(n).padStart(2, '0');
+    const name = `dog-walker-pro-${stamp.getFullYear()}${p(stamp.getMonth() + 1)}${p(stamp.getDate())}-${p(stamp.getHours())}${p(stamp.getMinutes())}${p(stamp.getSeconds())}.png`;
+    canvas.toBlob(blob => {
+      const url = URL.createObjectURL(blob), out = c.querySelector('#shot-out');
+      out.innerHTML = `<img id="shot-preview" src="${url}" alt="Screenshot"><div class="row"><a class="btnx primary" id="dl" href="${url}" download="${name}">⬇ Download PNG</a></div>`;
+    }, 'image/png');
+  };
+}
+
 // ---------------------------------------------------------------- welcome
 export function showWelcome(game) {
   const c = open(`
