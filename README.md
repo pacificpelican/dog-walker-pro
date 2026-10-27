@@ -39,6 +39,26 @@ Content tables for dogs, birds, hats, NPC personas and buildings are in `js/data
   to store accounts and saves in MySQL/MariaDB instead (needs PHP `pdo_mysql`). The Settings > Debug tab shows which is active.
 - **AI chat**: set the Ollama URL and model. If the server is unreachable, NPCs reply with scripted lines.
 
+### Setting up Ollama
+
+1. Install Ollama from [ollama.com/download](https://ollama.com/download) (Windows, macOS, and Linux builds available).
+   It may also be installable via a package manager such as [Chocolatey](https://community.chocolatey.org/packages/Ollama),
+   [Homebrew](https://formulae.brew.sh/formula/ollama) or [Snap](https://snapcraft.io/install/ollama/ubuntu).
+2. Download the model the app expects:
+
+   ```
+   ollama pull llama3.1:8b
+   ```
+
+3. Start the server (it usually runs automatically after install, but this works everywhere):
+
+   ```
+   ollama serve
+   ```
+
+The API listens on `http://localhost:11434` by default, which matches `config.php` out of the box
+(`http://127.0.0.1:11434`, model `llama3.1:8b`). To use a different model, pull it and change `model` in `config.php`.
+
 ## Notes
 
 - Local storage mode is a JSON file because many PHP installs lack `pdo_sqlite`.
