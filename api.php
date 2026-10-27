@@ -7,6 +7,10 @@ header('Cache-Control: no-store');
 require __DIR__ . '/lib/store.php';
 $cfg = require __DIR__ . '/config.php';
 
+function cut(string $s, int $start, int $len): string {
+    return function_exists('mb_substr') ? mb_substr($s, $start, $len) : substr($s, $start, $len);
+}
+
 function out($data, int $code = 200): void {
     http_response_code($code);
     echo json_encode($data);
@@ -94,12 +98,12 @@ switch ($action) {
     }
     case 'chat': {
         $ai = $cfg['ai'];
-        $msg = mb_substr(trim((string)($body['message'] ?? '')), 0, 300);
+        $msg = cut(trim((string)($body['message'] ?? '')), 0, 300);
         $npc = is_array($body['npc'] ?? null) ? $body['npc'] : [];
         if ($msg === '') { out(['ok' => false, 'error' => 'Empty message'], 400); }
         if (empty($ai['enabled'])) { out(['ok' => true, 'reply' => null, 'source' => 'disabled']); }
 
-        $clean = fn($v, $n) => mb_substr(preg_replace('/[\r\n]+/', ' ', (string)$v), 0, $n);
+        $clean = fn($v, $n) => cut(preg_replace('/[\r\n]+/', ' ', (string)$v), 0, $n);
         $places = array_slice(array_map(fn($p) => $clean($p, 40), is_array($body['places'] ?? null) ? $body['places'] : []), 0, 20);
         $system = "You are {$clean($npc['name'] ?? 'a local', 40)}, {$clean($npc['persona'] ?? 'a resident', 160)}, "
             . "a non-player character in a cheerful pixel-art video game called Dog Walker Pro set in a small city neighborhood. "
@@ -130,7 +134,7 @@ switch ($action) {
         $j = $res ? json_decode($res, true) : null;
         $reply = is_array($j) ? ($j['message']['content'] ?? null) : null;
         if (!is_string($reply) || trim($reply) === '') { out(['ok' => true, 'reply' => null, 'source' => 'unreachable']); }
-        out(['ok' => true, 'reply' => mb_substr(trim($reply), 0, 400), 'source' => 'ollama']);
+        out(['ok' => true, 'reply' => cut(trim($reply), 0, 400), 'source' => 'ollama']);
     }
     default:
         out(['ok' => false, 'error' => 'Unknown action'], 404);

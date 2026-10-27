@@ -7,4 +7,5 @@ if (preg_match('#^/(data|lib)(/|$)#', $path) || preg_match('#^/config\.php$#', $
     echo 'Forbidden';
     return true;
 }
+header('Cache-Control: no-cache');
 return false;

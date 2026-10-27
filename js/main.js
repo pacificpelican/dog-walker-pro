@@ -177,14 +177,12 @@ function buyCoffee() {
 
 function enter(b) {
   const W = game.walk;
+  const offer = W.availableOffer(b);
+  if (offer && !W.active) return ui.showOffer(game, offer, b, () => W.start(offer, b));
   if (b.enter === 'library') return ui.showLibrary();
   if (b.enter === 'hats') return ui.showHatStore(game);
   if (b.enter === 'gallery') return ui.showGallery();
-  const offer = W.availableOffer(b);
-  if (offer) {
-    if (W.active) { game.toast('Finish your current walk first.'); return; }
-    return ui.showOffer(game, offer, b, () => W.start(offer, b));
-  }
+  if (offer) { game.toast('Finish your current walk first.'); return; }
   game.toast(`${b.name}: ${b.blurb || 'a home'}. Nobody needs you right now.`, 1800);
 }
 

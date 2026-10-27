@@ -22,7 +22,7 @@ export class WalkSystem {
   refreshOffers(dt) {
     const flags = this.g.state.flags;
     for (const b of this.g.world.buildings) {
-      if (!b.jobs.length) continue;
+      if (!b.jobs.length || b.enter) continue;
       if (b.cooldown > 0) { b.cooldown -= dt; if (b.cooldown > 0) continue; }
       if (!b.offers) b.offers = {};
       for (const k of b.jobs) if (!b.offers[k]) b.offers[k] = this.newOffer(k);

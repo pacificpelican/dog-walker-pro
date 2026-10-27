@@ -3,10 +3,13 @@ import { PAL } from './data.js';
 
 export const R = (g, x, y, w, h, c) => { g.fillStyle = c; g.fillRect(Math.round(x), Math.round(y), Math.round(w), Math.round(h)); };
 const blob = (g, x, y, w, h, c) => { R(g, x + 1, y, w - 2, h, c); R(g, x, y + 1, w, h - 2, c); };
-const shade = (hex, f) => {
-  const n = parseInt(hex.slice(1), 16);
+const shade = (col, f) => {
+  let r, gr, b;
+  const m = /^rgb\((\d+),(\d+),(\d+)\)$/.exec(col);
+  if (m) { r = +m[1]; gr = +m[2]; b = +m[3]; }
+  else { const n = parseInt(col.slice(1), 16); r = n >> 16; gr = (n >> 8) & 255; b = n & 255; }
   const c = (v) => Math.max(0, Math.min(255, Math.round(v * f)));
-  return `rgb(${c(n >> 16)},${c((n >> 8) & 255)},${c(n & 255)})`;
+  return `rgb(${c(r)},${c(gr)},${c(b)})`;
 };
 const shadow = (g, x, y, w, h = 2) => R(g, x - w / 2, y - 1, w, h, 'rgba(30,10,50,.3)');
 

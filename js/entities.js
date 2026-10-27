@@ -70,7 +70,7 @@ export class Traffic {
     for (const seg of this.world.segments) {
       const tr = seg.cfg.traffic || {};
       for (const dir of [1, -1]) for (const type in want) {
-        const target = (tr[want[type]] || 0) * (type === 'car' ? 2.4 : 2);
+        const target = (tr[want[type]] || 0) * (type === 'car' ? 1.3 : 1);
         const have = this.counts.get(`${seg.axis}${seg.idx}-${this.segIndex(seg)}:${dir}:${type}`) || 0;
         if (have < target && this.rng() < Math.min(1, target - have) * .6) this.spawn(seg, dir, type, force ? null : view);
       }
