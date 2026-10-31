@@ -45,10 +45,65 @@ function start_session(DwpStore $store, string $name): string {
     return $t;
 }
 
+// Resolve the active AI provider's url/model/key from config (ollama = top-level keys, others = 'cloud' block).
+function ai_resolve(array $ai): array {
+    $p = strtolower((string)($ai['provider'] ?? 'ollama'));
+    if ($p === 'ollama' || !isset($ai['cloud'][$p])) {
+        return ['provider' => 'ollama', 'url' => (string)$ai['url'], 'model' => (string)$ai['model'], 'key' => '', 'version' => ''];
+    }
+    $c = $ai['cloud'][$p];
+    $envName = ['openai' => 'OPENAI_API_KEY', 'anthropic' => 'ANTHROPIC_API_KEY', 'gemini' => 'GEMINI_API_KEY', 'azure' => 'AZURE_OPENAI_API_KEY'][$p] ?? '';
+    $key = (string)($c['api_key'] ?? '');
+    if ($key === '' && $envName !== '') { $key = (string)(getenv($envName) ?: ''); }
+    return ['provider' => $p, 'url' => (string)($c['url'] ?? ''), 'model' => (string)($c['model'] ?? ''), 'key' => $key, 'version' => (string)($c['api_version'] ?? '')];
+}
+function ai_post(string $url, array $headers, array $payload, int $timeout): ?array {
+    $ctx = stream_context_create(['http' => [
+        'method' => 'POST',
+        'header' => implode("\r\n", array_merge(['Content-Type: application/json'], $headers)) . "\r\n",
+        'content' => json_encode($payload),
+        'timeout' => $timeout,
+        'ignore_errors' => true,
+    ]]);
+    $res = @file_get_contents($url, false, $ctx);
+    $j = $res ? json_decode($res, true) : null;
+    return is_array($j) ? $j : null;
+}
+// Returns the reply text or null. $msgs = [system, ...history, user] in {role, content} form.
+function ai_chat(array $r, string $system, array $history, string $msg, int $maxTokens, int $timeout): ?string {
+    $base = rtrim($r['url'], '/');
+    $turns = array_merge($history, [['role' => 'user', 'content' => $msg]]);
+    $chat = array_merge([['role' => 'system', 'content' => $system]], $turns);
+    if ($r['provider'] !== 'ollama' && $r['key'] === '') { return null; }
+    switch ($r['provider']) {
+        case 'ollama':
+            $j = ai_post($base . '/api/chat', [], ['model' => $r['model'], 'stream' => false, 'messages' => $chat, 'options' => ['num_predict' => $maxTokens]], $timeout);
+            return $j['message']['content'] ?? null;
+        case 'openai':
+            $j = ai_post($base . '/chat/completions', ['Authorization: Bearer ' . $r['key']], ['model' => $r['model'], 'messages' => $chat, 'max_tokens' => $maxTokens], $timeout);
+            return $j['choices'][0]['message']['content'] ?? null;
+        case 'azure':
+            $url = $base . '/openai/deployments/' . rawurlencode($r['model']) . '/chat/completions?api-version=' . rawurlencode($r['version'] ?: '2024-10-21');
+            $j = ai_post($url, ['api-key: ' . $r['key']], ['messages' => $chat, 'max_tokens' => $maxTokens], $timeout);
+            return $j['choices'][0]['message']['content'] ?? null;
+        case 'anthropic':
+            $j = ai_post($base . '/messages', ['x-api-key: ' . $r['key'], 'anthropic-version: 2023-06-01'],
+                ['model' => $r['model'], 'system' => $system, 'messages' => $turns, 'max_tokens' => $maxTokens], $timeout);
+            return $j['content'][0]['text'] ?? null;
+        case 'gemini':
+            $contents = array_map(fn($t) => ['role' => $t['role'] === 'assistant' ? 'model' : 'user', 'parts' => [['text' => $t['content']]]], $turns);
+            $j = ai_post($base . '/models/' . rawurlencode($r['model']) . ':generateContent', ['x-goog-api-key: ' . $r['key']],
+                ['systemInstruction' => ['parts' => [['text' => $system]]], 'contents' => $contents, 'generationConfig' => ['maxOutputTokens' => $maxTokens]], $timeout);
+            return $j['candidates'][0]['content']['parts'][0]['text'] ?? null;
+    }
+    return null;
+}
+
 switch ($action) {
     case 'status': {
         $ai = $cfg['ai'];
-        out(['ok' => true, 'storage' => $storeInfo, 'ai' => ['enabled' => (bool)$ai['enabled'], 'url' => $ai['url'], 'model' => $ai['model']]]);
+        $r = ai_resolve($ai);
+        out(['ok' => true, 'storage' => $storeInfo, 'ai' => ['enabled' => (bool)$ai['enabled'], 'provider' => $r['provider'], 'url' => $r['url'], 'model' => $r['model']]]);
     }
     case 'register': {
         $name = trim((string)($body['username'] ?? ''));
@@ -117,24 +172,10 @@ switch ($action) {
                 $history[] = ['role' => $h['role'], 'content' => $clean($h['content'] ?? '', 300)];
             }
         }
-        $payload = json_encode([
-            'model' => $ai['model'],
-            'stream' => false,
-            'messages' => array_merge([['role' => 'system', 'content' => $system]], $history, [['role' => 'user', 'content' => $msg]]),
-            'options' => ['num_predict' => (int)$ai['max_tokens']],
-        ]);
-        $ctx = stream_context_create(['http' => [
-            'method' => 'POST',
-            'header' => "Content-Type: application/json\r\n",
-            'content' => $payload,
-            'timeout' => (int)$ai['timeout'],
-            'ignore_errors' => true,
-        ]]);
-        $res = @file_get_contents(rtrim($ai['url'], '/') . '/api/chat', false, $ctx);
-        $j = $res ? json_decode($res, true) : null;
-        $reply = is_array($j) ? ($j['message']['content'] ?? null) : null;
+        $r = ai_resolve($ai);
+        $reply = ai_chat($r, $system, $history, $msg, (int)$ai['max_tokens'], (int)$ai['timeout']);
         if (!is_string($reply) || trim($reply) === '') { out(['ok' => true, 'reply' => null, 'source' => 'unreachable']); }
-        out(['ok' => true, 'reply' => cut(trim($reply), 0, 400), 'source' => 'ollama']);
+        out(['ok' => true, 'reply' => cut(trim($reply), 0, 400), 'source' => $r['provider']]);
     }
     default:
         out(['ok' => false, 'error' => 'Unknown action'], 404);

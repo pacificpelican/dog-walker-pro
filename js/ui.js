@@ -140,7 +140,7 @@ export function showDialog(game, p, onUnlockBird) {
     const thinking = document.createElement('div'); thinking.className = 'reply'; thinking.textContent = '…'; log.appendChild(thinking);
     const r = await api.chat({ npc: { name: npc.name, persona: npc.persona, topic: npc.topic }, message: text, history: history.slice(-7, -1), places });
     thinking.remove();
-    let reply = r && r.ok ? r.reply : null, src = r && r.source === 'ollama' ? 'AI' : '';
+    let reply = r && r.ok ? r.reply : null, src = r && r.source && r.source !== 'disabled' && r.source !== 'unreachable' ? 'AI' : '';
     if (!reply) reply = fallbackReply(npc, text, game);
     addReply(npc.name, reply, src); history.push({ role: 'assistant', content: reply });
     busy = false; if (!matchMedia('(pointer: coarse)').matches) inp.focus();
